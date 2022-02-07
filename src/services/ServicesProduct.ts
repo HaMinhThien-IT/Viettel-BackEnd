@@ -1,60 +1,164 @@
 
+import { ListPropsProduct } from './../model/ListProps';
+
 import { pool } from "../ConnectDB";
 
-import { Product } from "../model/Product";
-
+import {  product, ProductDetail, ProductLine, Products } from "../model/Product";
+import { QueryResult } from 'pg';
 class ServicesProduct {
-    getListProductWithAdmin = async () => {
-        const now = await pool.query('select * from product');
-        return now.rows
-    }
-    getListProductWithPagination = async (page: number, search: string, pageSize: number) => {
+    getListProductWithPagination = async (page: number, pagesize: number, name: string, orderBy: string, from: number, to: number) => {
         let countProduct;
-        let product: Product[] = [];
-        if (search != null && search != "") {
-            const now = await pool.query(`SELECT * FROM product where name ilike '%${search}%' LIMIT ${pageSize} OFFSET (${page} - 1) * ${pageSize}`)
-            countProduct = await pool.query(`SELECT count(*) FROM product where name ilike '%${search}%' LIMIT ${pageSize} OFFSET (${page} - 1) * ${pageSize}`)
-            product = now.rows
-        } else {
-            const now = await pool.query(`SELECT * FROM product LIMIT ${pageSize} OFFSET (${page} - 1) * ${pageSize}`)
-            countProduct = await pool.query(`SELECT count(*)  FROM product `)
-            product = now.rows
-        }
+        let listProduct: product[] = []
+        if (name != undefined && name != '' && name != null) {
+            console.log("1");
+            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
+            countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' `)
+            listProduct = queryListProduct.rows
+            console.log(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
 
-        let totalPage = Number(countProduct.rows[0].count) % pageSize;
+        } else if (orderBy !== undefined && orderBy != null && orderBy != "") {
+            console.log("2");
+            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  ORDER BY p.price_product ${orderBy} limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
+            console.log(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  ORDER BY p.price_product ${orderBy} limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
+
+            countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id `)
+            console.log(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
+
+            listProduct = queryListProduct.rows
+        } else if (from != undefined || to != undefined && from || to) {
+            console.log("3");
+            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where p.price_product  between  ${from} and ${to} limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
+            countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where p.price_product  between  ${from} and ${to} `)
+            listProduct = queryListProduct.rows
+        }
+        else {
+            console.log("4");
+            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
+            countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id `)
+            listProduct = queryListProduct.rows
+        }
+        let totalPage = Math.ceil(Number(countProduct.rows[0].count) / pagesize)
+        console.log(totalPage);
+
+        return { listProduct, totalPage };
+    }
+    getProductLine = async () => {
+        const listProductLine = await pool.query(`select *,t.name_trademark from product_line pl join trademark t  on t.trademark_id  = pl.trademark_id  order by createat desc`)
+        return listProductLine.rows
+    }
+    addProductLine = async (products: ProductLine) => {
+        await pool.query(`insert into product_line (product_id,product_name,trademark_id,createAt,updateAt) values ('${products.product_id}','${products.product_name}','${products.trademark_id}','${products.createAt}','${products.updateAt}')
+        `)
+        const listProductLine = await pool.query(`select *,t.name_trademark from product_line pl join trademark t  on t.trademark_id  = pl.trademark_id  order by createat desc`)
+        return listProductLine.rows
+    }
+
+    updateProductLine = async (product_id: string, product_name: string, trademark_id: string, createat: string, updateat: string,) => {
+        await pool.query(`UPDATE public.product_line SET product_name='${product_name}', trademark_id='${trademark_id}', createat='${createat}', updateat='${updateat}' WHERE product_id='${product_id}'`)
+        const listProductLine = await pool.query(`select *,t.name_trademark from product_line pl join trademark t  on t.trademark_id  = pl.trademark_id  order by createat desc`)
+        return listProductLine.rows
+    }
+    editProductsById = async (products: Products) => {
+        console.log(`UPDATE public.products SET  product_color_id=${products.product_color_id}, product_ram_id=${products.product_ram_id}, image='${products.image}', price_product=${products.price_product}, quantity=${products.quantity} where productsid = '${products.productsId}';`);
+        await pool.query(`UPDATE public.products SET  product_color_id=${products.product_color_id}, product_ram_id=${products.product_ram_id}, image='${products.image}', price_product=${products.price_product}, quantity=${products.quantity} where productsid = '${products.productsId}';`)
+        console.log(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${products.product_id}' 
+       `);
+
+        const listProducts = await pool.query(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${products.product_id}' 
+        `)
+        return listProducts.rows
+    }
+    getTrademark = async () => {
+        const trademark_ = await pool.query('select * from trademark t ')
+        return trademark_.rows
+    }
+    getDetailProduct = async (product_id: string) => {
+        console.log("hi");
+
+        let lisProductTemp: QueryResult = await pool.query(`select ram,color,* from product_line pl  join  products p  on pl.product_id  = p.product_id join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr 
+        on pr.product_ram_id  = p.product_ram_id where pl.product_id = '${product_id}'`)
+        let getAll = lisProductTemp.rows;
+        let ListProduct: ProductDetail[] = []
+        let allId: string[] = []
+       
+        getAll.map(item => allId.push(item.product_id))
+       
+        // lay danh sach id 
+        allId = Array.from(new Set(allId))
+      
+        //loc 
+        allId.map(product_id => {
+            const detail: ProductDetail = {
+                product_id: product_id,
+                product_name: '',
+                trademark_id: '',
+                createAt: '',
+                updateAt: '',
+                products: []
+            }
+            getAll.map(itemTemp => {
+                if (itemTemp.product_id === product_id) {
+                    detail.product_id = itemTemp.product_id,
+                        detail.product_name = itemTemp.product_name,
+                        detail.trademark_id = itemTemp.trademark_id,
+                        detail.createAt = itemTemp.createat,
+                        detail.updateAt = itemTemp.updateat
+                    detail.products.push({
+                        productsid: itemTemp.productsid,
+                        product_id: itemTemp.product_id,
+                        product_color_id: itemTemp.product_color_id,
+                        product_ram_id: itemTemp.product_ram_id,
+                        image: itemTemp.image,
+                        price_product: itemTemp.price_product,
+                        quantity: itemTemp.quantity,
+                        ram: itemTemp.ram,
+                        color: itemTemp.color
+                    })
+                }
+               
+            })
+
+            
+            ListProduct.push(detail)
+            
+            
+           
+        })
+
+        return ListProduct;
+
+    }
+    getProductsById = async (product_id: string) => {
+        const listProducts = await pool.query(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${product_id}' 
+        `)
+        return listProducts.rows
+    }
+    getListColor = async () => {
+        const listColor = await pool.query('select  * from product_color pc ')
+        return listColor.rows
+    }
+    getListRam = async () => {
+        const listRam = await pool.query('select  * from product_ram pr ')
+        return listRam.rows
+    }
+    addProduct = async (products: Products) => {
+        await pool.query(`INSERT INTO public.products (productsId,product_id, product_color_id, product_ram_id, image, price_product, quantity) VALUES('${products.productsId}','${products.product_id}', ${products.product_color_id}, ${products.product_ram_id}, '${products.image}', ${products.price_product}, ${products.quantity})`)
+      
+        const listProducts = await pool.query(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${products.product_id}' 
+        `)
+        return listProducts.rows
+    }
+    deleteProduct = async (productsId: string,productId:string) =>{
+        await pool.query(`delete from products 
+        where productsid  = '${productsId}'`)   
+        const listProducts = await pool.query(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${productId}' 
+        `)
+        return listProducts.rows
+    }
 
 
-        if (totalPage > 0) {
-            totalPage = (Number(countProduct.rows[0].count) / pageSize) + 1
-        } else {
-            totalPage = Number(countProduct.rows[0].count) / pageSize
-        }
-        let arr = [];
-        for (let i = 1; i <= totalPage; i++) {
-            arr.push(i)
-        }
-        return { product, arr };
-    }
-    getProductOnFilter = async (name: string) => {
-        const now = await pool.query(`select * from product where lower(name) like  lower('%${name}%') `)
-        return now.rows
-    }
-    addNewProduct = async (image: string, name: string, price: number) => {
-        await pool.query('insert into product (image,name,price) values($1,$2,$3)', [image, name, price])
-        const now = await pool.query('select * from product');
-        return now.rows
-    }
-    deleteByIdProduct = async (id: string) => {
-        await pool.query(`DELETE FROM public.product WHERE id='${id}'`)
-        const now = await pool.query('select * from product');
-        return now.rows
-    }
-    editProductById = async (id: string, image: string, name: string, price: number) => {
-        pool.query(`UPDATE public.product SET image='${image}', "name"='${name}', price=${price} WHERE id='${id}'`)
-        const now = await pool.query('select * from product');
-        return now.rows
-    }
-    
+
 }
+
 
 export const servicesProduct = new ServicesProduct();

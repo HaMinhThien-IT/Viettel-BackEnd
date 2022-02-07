@@ -1,36 +1,78 @@
+import { ListPropsEditProduct, ListPropsProduct } from './../model/ListProps';
+
 import express, { NextFunction, Request, response, Response } from 'express'
 import { ListProps } from '../model/ListProps'
+import { AddProductWithDetail, ProductLine, Products } from '../model/Product'
 import { servicesProduct } from "../services/ServicesProduct"
-
+import { v4 as uuidv4 } from 'uuid';
 
 class ProductController {
 
-    getListProductWithAdmin = async (req: Request, res: Response) => {
-        res.json(await servicesProduct.getListProductWithAdmin())
+    getListProduct = async (req: Request, res: Response) => {
+        const listPropsProduct: ListPropsProduct = req.body;
+        const { page, pagesize, name, orderBy, from, to } = listPropsProduct
+        console.log(req.body);
+        res.json(await servicesProduct.getListProductWithPagination(page, pagesize, name, orderBy, from, to))
     }
-    getListProductWithPagination = async (req: Request, res: Response) => {
-        const listProps: ListProps = req.body;
-        const { page, search,pageSize, } = listProps
-        res.json(await servicesProduct.getListProductWithPagination(page,search,pageSize))
+   
+    addPRoductLine = async (req: Request, res: Response) => {
+        const product_idV4 = uuidv4();
+        const addLineProps: ProductLine = req.body;
+        addLineProps.product_id = product_idV4
+        addLineProps.createAt = new Date().toLocaleString('en-GB')
+        addLineProps.updateAt = new Date().toLocaleString('en-GB')
+        res.json(await servicesProduct.addProductLine(addLineProps))
     }
-    getProductOnFilter = async(req: Request, res: Response)=>{
-        res.json(await servicesProduct.getProductOnFilter(String(req.params.name)))
+    addProductsById = async (req: Request, res: Response) => {
+        const product_id = req.params.product_id
+        const productsIdV4 = uuidv4();
+        const addProducsProps: Products = req.body;
+        addProducsProps.product_id = product_id
+        addProducsProps.productsId = productsIdV4
+ 
+        res.json(await servicesProduct.addProduct(addProducsProps))
     }
-    addNewProduct = async(req: Request, res: Response) =>{
-        const { image, name, price } = req.body
-        res.json(await servicesProduct.addNewProduct(image, name, price))
+    editProductsById = async (req: Request, res: Response) => {
+        const product_id = req.params.productsid
+        const editProduct: Products = req.body;
+        editProduct.productsId = product_id
+        res.json(await servicesProduct.editProductsById(editProduct))
     }
-    deleteWithProduct = async(req:Request,res:Response) =>{
-        let id = String(req.params.id)
-        res.json(await servicesProduct.deleteByIdProduct(id))
+    getTrademark = async (req: Request, res: Response) => {
+        res.json(await servicesProduct.getTrademark())
     }
-    editProductById = async (req:Request,res:Response) =>{
-        const id = String(req.params.id)
-        const { image, name, price } = req.body
-        res.json(await servicesProduct.editProductById(id, image, name, price ))
+    getProductDetail = async (req: Request, res: Response) => {
+        let product_id = String(req.params.product_id)
+        console.log(product_id);
+        res.json(await servicesProduct.getDetailProduct(product_id))
+    }
+    getListProductLine = async (req: Request, res: Response) => {
+        res.json(await servicesProduct.getProductLine())
+    }
+    editProductLine = async (req: Request, res: Response) => {
+        const editLineProps: ListPropsEditProduct = req.body;
+        const product_id = req.params.product_id
+        const { product_name, trademark_id, createat } = editLineProps
+        editLineProps.updateat = new Date().toLocaleString('en-GB')
+        res.json(await servicesProduct.updateProductLine(product_id, product_name, trademark_id, createat, editLineProps.updateat))
     }
     
+    getProductsById = async (req: Request, res: Response) => {
+        const product_id = req.params.product_id;
+        res.json(await servicesProduct.getProductsById(product_id))
+    }
+    getListColor = async (req: Request, res: Response) => {
+        res.json(await servicesProduct.getListColor())
+    }
+    getListRam = async (req: Request, res: Response) => {
+        res.json(await servicesProduct.getListRam())
+    }
+    deleteProduct  = async (req: Request, res: Response) => {
+        const productIds = req.params.productsid
+        const product_id= req.body.product_id
+        res.json(await servicesProduct.deleteProduct(productIds,product_id))
+    }
+   
 }
 
 export const productController = new ProductController()
-

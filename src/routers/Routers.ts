@@ -1,39 +1,39 @@
-import { NextFunction, Request, Response, Router } from 'express';
-import { authController } from '../controller/AuthController';
-import { orderProductController } from '../controller/OrderProductController';
+import { authController } from './../controller/AuthController';
 import { productController } from './../controller/ProductController';
 const jwt = require("jsonwebtoken")
+import { NextFunction, Request, Response, Router } from 'express';
+import { orderController } from '../controller/OrderController';
 
 const router = Router()
-function authenToken(req: Request, res: Response, netx: NextFunction) {
+function Token(req: Request, res: Response, netx: NextFunction) {
     const authorizationHeader = req.header('authorization')
-    if (!authorizationHeader) return res.status(401).send("Ban chua dang nhap")
+    if (!authorizationHeader) return res.status(401).send("Bạn chưa đăng nhập")
     try {
-        jwt.verify(authorizationHeader, process.env.ACCESS_TOKEN_SECRET)    
+        jwt.verify(authorizationHeader, "jwt")    
         netx()
     } catch (error) {
-        return res.status(401).send("login that bai")
+        return res.status(401).send("Token đã hết vui lòng đăng nhập lại !")
     }
 }
 //product
-router.get('/admin',authenToken, productController.getListProductWithAdmin)
-router.post('/product/filter',authenToken, productController.getListProductWithPagination)
-router.post('/filter/:name',authenToken, productController.getProductOnFilter)
-router.post('/add', productController.addNewProduct)
-router.delete('/product/:id',productController.deleteWithProduct)
-router.put('/edit/:id',productController.editProductById)
-
-
-//order
-router.post('/getListOrder/:user_id',orderProductController.getListOrder)
-router.post('/checkout',orderProductController.checkout)
-router.post('/order/:id',orderProductController.order)
-router.post('/listCart',authenToken,orderProductController.listCart)
-router.post('/plus',orderProductController.plusQuantity)
-router.post('/minus',orderProductController.minusQuantity)
-router.post('/delete',orderProductController.deleteCart)
-
-
-// auth
-router.get('/getMe',authController.getInfoMe)
+router.get('/trademark', productController.getTrademark)
+router.get('/color', productController.getListColor)
+router.get('/ram', productController.getListRam)
+router.post('/listProduct',Token, productController.getListProduct)
+router.post('/addProductLine', productController.addPRoductLine)
+router.get('/product/:product_id', productController.getProductDetail)
+router.get('/listProductLine',Token, productController.getListProductLine)
+router.put('/editProductLine/:product_id', productController.editProductLine)
+router.post('/getProductsByID/:product_id',productController.getProductsById)
+router.post('/addProductsByID/:product_id',productController.addProductsById)
+router.post('/editProductsByID/:productsid',productController.editProductsById)
+router.post('/removeProductsByID/:productsid',productController.deleteProduct)
+//auth
+router.post('/register',authController.register)
+router.post('/login',authController.login)
+router.get('/getMe',authController.getMe)
+// order
+router.post('/getListCart',orderController.getListCart)
+router.post('/addToCart',orderController.addToCart)
+router.post('/checkout',orderController.checkOut)
 export default router
