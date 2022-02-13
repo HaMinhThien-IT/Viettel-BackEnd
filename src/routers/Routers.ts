@@ -32,8 +32,10 @@ router.post('/removeProductsByID/:productsid',productController.deleteProduct)
 router.post('/register',authController.register)
 router.post('/login',authController.login)
 router.get('/getMe',authController.getMe)
+router.post('/checkTuoi',authController.checkTuoi)
 // order
 router.post('/getListCart',orderController.getListCart)
 router.post('/addToCart',orderController.addToCart)
 router.post('/checkout',orderController.checkOut)
+router.post('/listCheckout',orderController.listCheckout)
 export default router

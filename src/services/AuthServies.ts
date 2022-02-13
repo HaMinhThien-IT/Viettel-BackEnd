@@ -2,6 +2,7 @@ import { pool } from "../ConnectDB";
 import { QueryResult } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import { ListPropsRegister } from "../model/ListProps";
+import { response } from "express";
 class AuthServies {
     registerUser = async (user_id: string, email: string, password: string) => {
         await pool.query(`insert into buyuser (user_id,email,"password") values ('${user_id}','${email}','${password}')`)
@@ -17,6 +18,15 @@ class AuthServies {
     getMe = async (user_id: string) => {
         let infoMe = await pool.query(`select  *  from  buyuser b  where user_id ='${user_id}'`)
         return infoMe.rows[0]
+    }
+    checkTuoi(name:string ,age:number){
+        let a:string = `${name} oi, Ban du tuoi !`
+        let b:string = `${name} oi, Ban khong co tuoi !`
+        if(age >= 18){
+            return a
+        }else{
+            return b
+        }
     }
 
 }

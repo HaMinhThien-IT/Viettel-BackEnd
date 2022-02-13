@@ -38,6 +38,11 @@ class AuthController {
         }
 
     }
+    checkTuoi = async (req: Request, res: Response) => {
+        const age:number= req.body.age
+        const name:string= req.body.name
+        res.json(await authServies.checkTuoi(name,age))
+    }
 
 }
 

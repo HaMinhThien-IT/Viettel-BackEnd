@@ -16,17 +16,22 @@ export interface ListPropsEditProduct {
     trademark_id: string,
     createat: string,
     updateat: string,
-   
+
 }
 export interface ListPropsProduct {
-    page : number,
+    page: number,
     pagesize: number,
     name: string,
-    orderBy : string,
-    from : number,
-    to :number
+    orderBy: string,
+    from: number,
+    to: number
 }
-export interface ListPropsRegister{
-    email:string,
-    password:string
+export interface ListPropsRegister {
+    email: string,
+    password: string
+}
+export interface ListPropsCheckout {
+    user_id: string,
+    pageSize: number,
+    page: number
 }

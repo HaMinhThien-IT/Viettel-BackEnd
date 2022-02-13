@@ -2,12 +2,13 @@ import express, { NextFunction, Request, response, Response } from 'express'
 import { UserInfo } from 'os';
 import { CartModel } from '../model/Cart';
 import { order_user } from '../model/Checkout';
+import { ListPropsCheckout } from '../model/ListProps';
 
 
 import { orderServies } from '../services/OrderServies';
 
 class OrderController {
-    addToCart =  async (req: Request, res: Response) => {
+    addToCart = async (req: Request, res: Response) => {
         const addToCartProps: CartModel = req.body.addToCartModel;
         const id_order = req.body.id_order
         addToCartProps.id_order = id_order
@@ -24,8 +25,14 @@ class OrderController {
         const statePayMent = req.body.statePayMent;
         const id_order = req.body.id_order;
         console.log(req.body);
-        
-        res.json(await orderServies.checkOut(checkoutUser,user_id,order_user_id,statePayMent,id_order))
+
+        res.json(await orderServies.checkOut(checkoutUser, user_id, order_user_id, statePayMent, id_order))
+    }
+    listCheckout = async (req: Request, res: Response) => {
+        const user_id = req.body.user_id
+        const pageSize  = req.body.pageSize
+        const page  = req.body.page 
+        res.json(await orderServies.listCheckOut(user_id,pageSize,page))
     }
 
 }

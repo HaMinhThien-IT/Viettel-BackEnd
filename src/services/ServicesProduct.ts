@@ -73,20 +73,13 @@ class ServicesProduct {
         return trademark_.rows
     }
     getDetailProduct = async (product_id: string) => {
-        console.log("hi");
-
         let lisProductTemp: QueryResult = await pool.query(`select ram,color,* from product_line pl  join  products p  on pl.product_id  = p.product_id join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr 
         on pr.product_ram_id  = p.product_ram_id where pl.product_id = '${product_id}'`)
         let getAll = lisProductTemp.rows;
         let ListProduct: ProductDetail[] = []
-        let allId: string[] = []
-       
+        let allId: string[] = []  
         getAll.map(item => allId.push(item.product_id))
-       
-        // lay danh sach id 
         allId = Array.from(new Set(allId))
-      
-        //loc 
         allId.map(product_id => {
             const detail: ProductDetail = {
                 product_id: product_id,
