@@ -9,37 +9,27 @@ class ServicesProduct {
     getListProductWithPagination = async (page: number, pagesize: number, name: string, orderBy: string, from: number, to: number) => {
         let countProduct;
         let listProduct: product[] = []
-        if (name != undefined && name != '' && name != null) {
-            console.log("1");
-            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
+        if( orderBy != ""){
+            orderBy=`ORDER BY p.price_product ${orderBy}`
+        }
+        else{
+            orderBy=""
+        }
+        if (name != undefined && name != '') {
+            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' ${orderBy}  limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
             countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' `)
             listProduct = queryListProduct.rows
-            console.log(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.product_name ilike '%${name}%' limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
-
-        } else if (orderBy !== undefined && orderBy != null && orderBy != "") {
-            console.log("2");
-            const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  ORDER BY p.price_product ${orderBy} limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
-            console.log(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  ORDER BY p.price_product ${orderBy} limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
-
-            countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id `)
-            console.log(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
-
-            listProduct = queryListProduct.rows
         } else if (from != undefined || to != undefined && from || to) {
-            console.log("3");
             const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where p.price_product  between  ${from} and ${to} limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`);
             countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where p.price_product  between  ${from} and ${to} `)
             listProduct = queryListProduct.rows
         }
         else {
-            console.log("4");
             const queryListProduct = await pool.query(`select *,pr.ram from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id limit ${pagesize} OFFSET (${page} - 1) * ${pagesize}`)
             countProduct = await pool.query(`select count(*) from  product_line pl join products p  on pl.product_id  = p.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id `)
             listProduct = queryListProduct.rows
         }
         let totalPage = Math.ceil(Number(countProduct.rows[0].count) / pagesize)
-        console.log(totalPage);
-
         return { listProduct, totalPage };
     }
     getProductLine = async () => {
@@ -59,11 +49,7 @@ class ServicesProduct {
         return listProductLine.rows
     }
     editProductsById = async (products: Products) => {
-        console.log(`UPDATE public.products SET  product_color_id=${products.product_color_id}, product_ram_id=${products.product_ram_id}, image='${products.image}', price_product=${products.price_product}, quantity=${products.quantity} where productsid = '${products.productsId}';`);
         await pool.query(`UPDATE public.products SET  product_color_id=${products.product_color_id}, product_ram_id=${products.product_ram_id}, image='${products.image}', price_product=${products.price_product}, quantity=${products.quantity} where productsid = '${products.productsId}';`)
-        console.log(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${products.product_id}' 
-       `);
-
         const listProducts = await pool.query(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${products.product_id}' 
         `)
         return listProducts.rows
@@ -110,16 +96,9 @@ class ServicesProduct {
                 }
                
             })
-
-            
             ListProduct.push(detail)
-            
-            
-           
         })
-
         return ListProduct;
-
     }
     getProductsById = async (product_id: string) => {
         const listProducts = await pool.query(`select * from products p join product_color pc  on pc.product_color_id  = p.product_color_id  join product_ram pr  on pr.product_ram_id = p.product_ram_id  where product_id  = '${product_id}' 
@@ -148,9 +127,10 @@ class ServicesProduct {
         `)
         return listProducts.rows
     }
-
-
-
+    getRelatedProducts = async (name_productLine: string) =>{
+        const listRam = await pool.query(`select  * from product_line pl  join products p  on p.product_id  = pl.product_id join product_ram pr on pr.product_ram_id  = p.product_ram_id  where pl.trademark_id  = '${name_productLine}'`)
+        return listRam.rows
+    }
 }
 
 

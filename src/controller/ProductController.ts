@@ -72,6 +72,11 @@ class ProductController {
         const product_id= req.body.product_id
         res.json(await servicesProduct.deleteProduct(productIds,product_id))
     }
+    getRelatedProducts = async (req: Request, res: Response) => {
+        const trademark_id = req.body.trademark_id
+        console.log("kkkkkkkkkkkkk",trademark_id);
+        res.json(await servicesProduct.getRelatedProducts(trademark_id))
+    }
    
 }
 

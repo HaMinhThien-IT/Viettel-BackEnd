@@ -9,7 +9,20 @@ export interface Order {
     status_order: boolean,
     isTemporary: boolean
 }
+export interface OrderAdmin {
+    id_order: string,
+    user_id: string,
+    time_order: string,
+    status_order: boolean,
+    isTemporary: boolean
+    email :string
+}
+
 export interface OrderWithDetail extends Order {
+    orderProducts: CartModels[],
+    user: order_user
+}
+export interface OrderWithAdmin extends OrderAdmin {
     orderProducts: CartModels[],
     user: order_user
 }

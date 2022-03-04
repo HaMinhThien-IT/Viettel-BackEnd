@@ -34,6 +34,16 @@ class OrderController {
         const page  = req.body.page 
         res.json(await orderServies.listCheckOut(user_id,pageSize,page))
     }
+    listCheckOutAdmin = async (req: Request, res: Response) => {   
+        res.json(await orderServies.listCheckOutAdmin())
+    }
+    updateStatusOrder = async (req: Request, res: Response) => {  
+        const id_oder = req.body.id_oder
+        const email = req.body.email
+        const nameUser = req.body.nameUser
+        console.log(email);
+        res.json(await orderServies.updateStatusOrder(id_oder,email,nameUser))
+    }
 
 }
 

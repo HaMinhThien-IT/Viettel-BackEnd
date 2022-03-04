@@ -4,6 +4,7 @@ import { ListPropsRegister } from './../model/ListProps';
 import express, { NextFunction, Request, response, Response } from 'express'
 
 import { v4 as uuidv4 } from 'uuid';
+import { User } from '../model/BuyUser';
 const jwt = require("jsonwebtoken")
 class AuthController {
     register = async (req: Request, res: Response) => {
@@ -43,7 +44,26 @@ class AuthController {
         const name:string= req.body.name
         res.json(await authServies.checkTuoi(name,age))
     }
-
+    getListUser = async (req: Request, res: Response) => {
+        res.json(await authServies.getListUser())
+    }
+    addNewUser = async (req: Request, res: Response) => {
+        const user_id = uuidv4()
+        const userNew: User = req.body;
+        userNew.user_id = user_id;
+        res.json(await authServies.addNewUser(userNew))
+    }
+    updateUserById = async (req: Request, res: Response) => {
+        const user_id = req.params.user_id
+        const user: User = req.body;
+        user.user_id = user_id;
+        res.json(await authServies.updateUser(user))
+    }
+    deleteUserById  = async (req: Request, res: Response) => {
+        const user_id = req.params.user_id 
+        res.json(await authServies.onRemoveUser(user_id))
+    }
+     
 }
 
 export const authController = new AuthController()

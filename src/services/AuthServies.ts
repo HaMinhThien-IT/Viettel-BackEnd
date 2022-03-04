@@ -3,9 +3,10 @@ import { QueryResult } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import { ListPropsRegister } from "../model/ListProps";
 import { response } from "express";
+import { User } from "../model/BuyUser";
 class AuthServies {
     registerUser = async (user_id: string, email: string, password: string) => {
-        await pool.query(`insert into buyuser (user_id,email,"password") values ('${user_id}','${email}','${password}')`)
+        await pool.query(`insert into buyuser (user_id,email,"password",role) values ('${user_id}','${email}','${password}','user')`)
         return;
     }
     login = async (user: ListPropsRegister) => {
@@ -27,6 +28,29 @@ class AuthServies {
         }else{
             return b
         }
+    }
+    getListUser = async () => {
+        const listUser = await pool.query(`select * from buyuser`)
+        return listUser.rows
+    }
+    addNewUser = async (user:User) => {
+        await pool.query(`insert into buyuser (user_id,name_user,email,phone,"password",role) values ('${user.user_id}','${user.name_user}','${user.email}','${user.phone}','${user.password}','user')`)
+        const listUser = await pool.query(`select * from buyuser`)
+        return listUser.rows
+    }
+    updateUser = async (user:User) => {
+        
+        await pool.query(`UPDATE public.buyuser SET  name_user='${user.name_user}', email='${user.email}', phone='${user.phone}', "password"='${user.password}', "role"='${user.role}' where user_id = '${user.user_id}'`)
+             
+        const listUser = await pool.query(`select * from buyuser`)
+        return listUser.rows
+    }
+    onRemoveUser = async (userId:string) => {
+        console.log(`delete  from buyuser  where user_id = '${userId}'`);
+        
+        await pool.query(`delete  from buyuser  where user_id = '${userId}'`)
+        const listUser = await pool.query(`select * from buyuser`)
+        return listUser.rows
     }
 
 }
