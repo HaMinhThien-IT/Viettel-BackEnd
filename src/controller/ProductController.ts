@@ -10,9 +10,9 @@ class ProductController {
 
     getListProduct = async (req: Request, res: Response) => {
         const listPropsProduct: ListPropsProduct = req.body;
-        const { page, pagesize, name, orderBy, from, to } = listPropsProduct
+        const { page, pagesize, name, orderBy, from, to,trademark_id } = listPropsProduct
         console.log(req.body);
-        res.json(await servicesProduct.getListProductWithPagination(page, pagesize, name, orderBy, from, to))
+        res.json(await servicesProduct.getListProductWithPagination(page, pagesize, name, orderBy, from, to,trademark_id))
     }
    
     addPRoductLine = async (req: Request, res: Response) => {

@@ -3,6 +3,7 @@ import { UserInfo } from 'os';
 import { CartModel } from '../model/Cart';
 import { order_user } from '../model/Checkout';
 import { ListPropsCheckout } from '../model/ListProps';
+import { OrderAdmin, OrderWithAdmin } from '../model/Order';
 
 
 import { orderServies } from '../services/OrderServies';
@@ -41,8 +42,20 @@ class OrderController {
         const id_oder = req.body.id_oder
         const email = req.body.email
         const nameUser = req.body.nameUser
-        console.log(email);
-        res.json(await orderServies.updateStatusOrder(id_oder,email,nameUser))
+        const ordercart: OrderWithAdmin = req.body.ordercart;
+        res.json(await orderServies.updateStatusOrder(id_oder,email,nameUser,ordercart))
+    }
+    updateQuantityPlus = async (req: Request, res: Response) => {  
+        const id_oder = req.body.order_product_id
+        res.json(await orderServies.updateQuantity(id_oder))
+    }
+    updateQuantityMinus = async (req: Request, res: Response) => {  
+        const id_oder = req.body.order_product_id
+        res.json(await orderServies.updateQuantityMinus(id_oder))
+    }
+    deleteOrderProduct = async (req: Request, res: Response) => {  
+        const id_oder = req.body.order_product_id
+        res.json(await orderServies.deleteOrderProduct(id_oder))
     }
 
 }

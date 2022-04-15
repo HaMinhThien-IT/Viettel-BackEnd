@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 import { NextFunction, Request, Response, Router } from 'express';
 import { orderController } from '../controller/OrderController';
 import { brandController } from '../controller/BrandController';
+import { slideController } from '../controller/SlideController';
 
 const router = Router()
 function Token(req: Request, res: Response, netx: NextFunction) {
@@ -16,6 +17,8 @@ function Token(req: Request, res: Response, netx: NextFunction) {
         return res.status(401).send("Token đã hết vui lòng đăng nhập lại !")
     }
 }
+
+
 //product
 router.get('/trademark', productController.getTrademark)
 router.get('/color', productController.getListColor)
@@ -47,9 +50,14 @@ router.post('/checkout',orderController.checkOut)
 router.post('/listCheckout',orderController.listCheckout)
 router.get('/listCheckoutAdmin',orderController.listCheckOutAdmin)
 router.post('/status',orderController.updateStatusOrder)
+router.post('/minus',orderController.updateQuantityMinus)
+router.post('/plus',orderController.updateQuantityPlus)
+router.post('/delete',orderController.deleteOrderProduct)
 // brand
 router.get('/brands',brandController.getList)
 router.post('/brand',brandController.addNewBrand)
 router.put('/brand/:trademark_id',brandController.updateBrandById)
 router.delete('/brand/:trademark_id',brandController.deleteBrandById)
+//slide
+router.post('/slide', slideController.addNewSlide)
 export default router

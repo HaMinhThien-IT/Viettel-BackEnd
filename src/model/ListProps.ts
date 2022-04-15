@@ -24,7 +24,8 @@ export interface ListPropsProduct {
     name: string,
     orderBy: string,
     from: number,
-    to: number
+    to: number,
+    trademark_id:string
 }
 export interface ListPropsRegister {
     email: string,

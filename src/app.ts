@@ -6,10 +6,13 @@ const jwt = require("jsonwebtoken")
 import dotenv from 'dotenv'
 import router from './routers/Routers';
 
-
+const multer = require('multer')
 dotenv.config();
 const app = express()
-
+const upload = multer({
+    storage: multer.memoryStorage()
+})
+app.use(upload.single())
 
 
 app.use(express.json())
@@ -20,6 +23,8 @@ var cors = require('cors')
 app.use(cors())
 
 app.use(router)
+
+
 
 app.listen(3002, () => {
     console.log("Port: 3000");
